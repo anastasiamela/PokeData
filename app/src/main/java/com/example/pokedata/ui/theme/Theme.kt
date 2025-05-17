@@ -16,7 +16,8 @@ private val DarkColorScheme = darkColorScheme(
     background = Color(0xFF101010),
     onBackground = Color.White,
     surface = Color(0xFF303030),
-    onSurface = Color.White
+    onSurface = Color.White,
+    surfaceVariant = Color(0xFF4C444B),
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -24,7 +25,8 @@ private val LightColorScheme = lightColorScheme(
     background = LightBlue,
     onBackground = Color.Black,
     surface = Color.White,
-    onSurface = Color.Black
+    onSurface = Color.Black,
+    surfaceVariant = Color(0xFFEBE0E9),
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -45,10 +47,10 @@ fun PokeDataTheme(
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
+//        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+//            val context = LocalContext.current
+//            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+//        }
 
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
