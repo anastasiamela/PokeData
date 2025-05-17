@@ -58,6 +58,8 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.hilt)
     implementation(libs.javapoet)
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.palette.ktx)
     kapt(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.retrofit)

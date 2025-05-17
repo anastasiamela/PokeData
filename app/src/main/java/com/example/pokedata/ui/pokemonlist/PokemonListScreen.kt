@@ -14,12 +14,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.pokedata.R
+import com.example.pokedata.ui.pokemonlist.components.PokemonList
 import com.example.pokedata.ui.pokemonlist.components.SearchBar
 
 @Composable
-fun PokemonListScreen(navController: NavController) {
+fun PokemonListScreen(
+    navController: NavController,
+    viewModel: PokemonListViewModel = hiltViewModel()
+) {
+//    val pokemonList by viewModel.pokemonList.collectAsState()
+    val pokemonList = viewModel.pokemonList.value
+
     Surface(
         color = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxSize()
@@ -33,12 +41,20 @@ fun PokemonListScreen(navController: NavController) {
                     .fillMaxWidth()
                     .align(Alignment.CenterHorizontally)
             )
+            Spacer(modifier = Modifier.height(4.dp))
             SearchBar(
                 hint = "Search Pokémon...",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
-            ) { }
+            ) {
+//                viewModel.searchPokemonList(it)
+            }
+            PokemonList(
+                pokemonList = pokemonList,
+                navController = navController,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }

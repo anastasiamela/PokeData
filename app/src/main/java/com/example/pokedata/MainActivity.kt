@@ -4,14 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -29,22 +25,17 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PokeDataTheme {
-                val navController = rememberNavController();
-                NavHost(navController = navController, startDestination = "pokedex") {
-                    composable("pokedex") {
+                val navController = rememberNavController()
+                NavHost(navController = navController, startDestination = "pokemonListScreen") {
+                    composable("pokemonListScreen") {
                         PokemonListScreen(navController = navController)
                     }
                     composable(
-                        "details/{pokemonName}/{dominantColor}",
+                        "pokemonDetailsScreen/{pokemonName}",
                         arguments = listOf(
-                            navArgument("pokemonName") { type = NavType.StringType },
-                            navArgument("dominantColor") { type = NavType.IntType })
-                    ) { it ->
+                            navArgument("pokemonName") { type = NavType.StringType })
+                    ) {
                         val pokemonName = remember { it.arguments?.getString("pokemonName") }
-                        val dominantColor = remember {
-                            val color = it.arguments?.getInt("dominantColor")
-                            color?.let {Color(it)} ?: Color.White; 
-                        }
                         pokemonName?.let {
 //                            PokemonDetailsScreen(pokemonName = it)
                         }
