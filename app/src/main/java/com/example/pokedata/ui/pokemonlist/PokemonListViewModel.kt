@@ -1,8 +1,10 @@
 package com.example.pokedata.ui.pokemonlist
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pokedata.data.model.PokemonItem
+import com.example.pokedata.data.network.ConnectivityObserver
 import com.example.pokedata.repository.PokemonRepository
 import com.example.pokedata.util.Constants.PAGE_SIZE
 import com.example.pokedata.util.Resource
@@ -10,13 +12,16 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class PokemonListViewModel @Inject constructor(
-    private val repository: PokemonRepository
+    private val repository: PokemonRepository,
+    private val connectivityObserver: ConnectivityObserver
 ) : ViewModel() {
 
     private var currentPage = 0
@@ -32,6 +37,13 @@ class PokemonListViewModel @Inject constructor(
 
     private val _endReached = MutableStateFlow(false)
     val endReached: StateFlow<Boolean> = _endReached
+
+    val networkStatus: StateFlow<ConnectivityObserver.Status> =
+        connectivityObserver.observe()
+            .stateIn(viewModelScope, SharingStarted.Lazily, ConnectivityObserver.Status.Unavailable)
+
+    private val _failedImageUrls = mutableStateListOf<String>()
+    val failedImageUrls: List<String> get() = _failedImageUrls
 
     init {
         loadNextPage()
@@ -77,6 +89,18 @@ class PokemonListViewModel @Inject constructor(
             }
             _isLoading.value = false
         }
+    }
+
+    fun markImageFailed(url: String) {
+        if (!_failedImageUrls.contains(url)) _failedImageUrls.add(url)
+    }
+
+    fun markImageLoaded(url: String) {
+        _failedImageUrls.remove(url)
+    }
+
+    fun shouldRetry(url: String): Boolean {
+        return _failedImageUrls.contains(url)
     }
 
 }

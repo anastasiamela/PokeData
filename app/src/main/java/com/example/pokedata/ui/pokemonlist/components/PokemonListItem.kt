@@ -17,6 +17,12 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -33,6 +39,7 @@ import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.example.pokedata.data.model.PokemonItem
+import com.example.pokedata.data.network.ConnectivityObserver
 import com.example.pokedata.ui.pokemonlist.PokemonListViewModel
 import com.example.pokedata.ui.theme.TypeUnknown
 import com.example.pokedata.util.PokemonType
@@ -44,9 +51,22 @@ fun PokemonListItem(
     modifier: Modifier = Modifier,
     viewModel: PokemonListViewModel = hiltViewModel()
 ) {
+
     val dominantTypeColor = PokemonType
         .fromApiName(item.types.firstOrNull() ?: "")
         ?.color ?: TypeUnknown
+
+    val networkStatus by viewModel.networkStatus.collectAsState()
+    var retryKey by remember { mutableIntStateOf(0) }
+    LaunchedEffect(networkStatus) {
+        if (networkStatus == ConnectivityObserver.Status.Available &&
+            viewModel.shouldRetry(item.imageUrl)
+        ) {
+            // Only apply retryKey if image isn't previously loaded
+            retryKey++
+        }
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -77,6 +97,7 @@ fun PokemonListItem(
             SubcomposeAsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(item.imageUrl)
+                    .setParameter("retry_key", retryKey)
                     .crossfade(true)
                     .build(),
                 contentDescription = item.name,
@@ -88,6 +109,12 @@ fun PokemonListItem(
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.scale(0.5f)
                     )
+                },
+                onError = {
+                    viewModel.markImageFailed(item.imageUrl)
+                },
+                onSuccess = {
+                    viewModel.markImageLoaded(item.imageUrl)
                 }
             )
 
