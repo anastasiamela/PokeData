@@ -54,6 +54,7 @@ fun PokemonListScreen(
             ) {
 //                viewModel.searchPokemonList(it)
             }
+
             PokemonList(
                 pokemonList = pokemonList,
                 isLoading = isLoading,
@@ -71,4 +72,5 @@ fun PokemonListScreen(
         }
     }
 }
+
 
