@@ -2,7 +2,6 @@ package com.example.pokedata.ui.pokemonlist.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -46,28 +46,29 @@ fun PokemonListItem(
     val dominantTypeColor = PokemonType
         .fromApiName(item.types.firstOrNull() ?: "")
         ?.color ?: MaterialTheme.colorScheme.surface
-
-    Box(
+    Card(
         modifier = modifier
             .fillMaxWidth()
             .height(120.dp)
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            .background(
-                brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        dominantTypeColor.copy(alpha = 0.4f),
-                        dominantTypeColor
-                    )
-                ),
-                shape = RoundedCornerShape(16.dp)
-            )
+            .background(Color.Transparent)
+            .shadow(elevation = 4.dp, shape = RoundedCornerShape(12.dp))
             .clickable {
                 navController.navigate("pokemon_detail_screen/${item.name}")
-            }
+            },
+        shape = RoundedCornerShape(12.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            dominantTypeColor.copy(alpha = 0.4f),
+                            dominantTypeColor
+                        )
+                    )
+                )
                 .padding(12.dp)
                 .background(Color.Transparent),
             verticalAlignment = Alignment.CenterVertically
