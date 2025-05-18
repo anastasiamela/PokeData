@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.math.log
 
 @HiltViewModel
 class PokemonListViewModel @Inject constructor(
@@ -50,34 +49,27 @@ class PokemonListViewModel @Inject constructor(
 
             when (result) {
                 is Resource.Success -> {
-                    val entries = result.data?.results ?: emptyList()
+                    val pokemonListItems = result.data?.results ?: emptyList()
                     val totalCount = result.data?.count ?: 0
                     _endReached.value = offset + PAGE_SIZE >= totalCount
 
-                    val detailedEntries = entries.map { entry ->
+                    val pokemonItems = pokemonListItems.map { pokemonListItem ->
                         async {
-                            val detailResult = repository.getPokemonInfo(entry.name)
-                            when (detailResult) {
+                            val pokemonWithInfo = repository.getPokemonInfo(pokemonListItem.name)
+                            when (pokemonWithInfo) {
                                 is Resource.Success -> {
-                                    val detail = detailResult.data
-                                    PokemonItem(
-                                        name = detail!!.name,
-                                        number = detail.id,
-                                        imageUrl = detail.sprites.other.officialArtwork.frontDefault,
-                                        types = detail.types.map { typeSlot ->
-                                            typeSlot.type.name
-                                        }
-                                    )
+                                    val info = pokemonWithInfo.data
+                                    PokemonItem.fromPokemonInfoResponse(info!!)
                                 }
 
                                 is Resource.Error -> {
-                                    null // Could log error if needed
+                                    PokemonItem.fallbackFromPokemonListResponse(pokemonListItem)
                                 }
                             }
                         }
                     }.awaitAll().filterNotNull()
 
-                    _pokemonList.value = _pokemonList.value + detailedEntries
+                    _pokemonList.value = _pokemonList.value + pokemonItems
                     currentPage++
                 }
 
