@@ -30,6 +30,7 @@ fun PokemonListScreen(
     val pokemonList by viewModel.pokemonList.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val endReached by viewModel.endReached.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
     Surface(
         color = MaterialTheme.colorScheme.background,
@@ -56,8 +57,14 @@ fun PokemonListScreen(
             PokemonList(
                 pokemonList = pokemonList,
                 isLoading = isLoading,
+                errorMessage = errorMessage,
                 endReached = endReached,
-                loadNextPage = { viewModel.loadNextPage() },
+                loadNextPage = {
+                    viewModel.loadNextPage()
+                },
+                onRetry = {
+                    viewModel.loadNextPage()
+                },
                 navController = navController,
                 modifier = Modifier.weight(1f)
             )

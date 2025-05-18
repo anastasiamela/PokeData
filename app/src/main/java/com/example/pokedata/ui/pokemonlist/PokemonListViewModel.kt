@@ -24,16 +24,14 @@ class PokemonListViewModel @Inject constructor(
     private val _pokemonList = MutableStateFlow<List<PokemonItem>>(emptyList())
     val pokemonList: StateFlow<List<PokemonItem>> = _pokemonList
 
-    private val _loadError = MutableStateFlow("")
-    val loadError: StateFlow<String> = _loadError
+    private val _errorMessage = MutableStateFlow("")
+    val errorMessage: StateFlow<String> = _errorMessage
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
     private val _endReached = MutableStateFlow(false)
     val endReached: StateFlow<Boolean> = _endReached
-
-    private var cachedPokemonList = mutableListOf<PokemonItem>()
 
     init {
         loadNextPage()
@@ -42,7 +40,7 @@ class PokemonListViewModel @Inject constructor(
     fun loadNextPage() {
         viewModelScope.launch {
             _isLoading.value = true
-            _loadError.value = ""
+            _errorMessage.value = ""
 
             val offset = currentPage * PAGE_SIZE
             val result = repository.getPokemonList(limit = PAGE_SIZE, offset = offset)
@@ -74,7 +72,7 @@ class PokemonListViewModel @Inject constructor(
                 }
 
                 is Resource.Error -> {
-                    _loadError.value = result.message ?: "Unknown error"
+                    _errorMessage.value = result.message ?: "Unknown error"
                 }
             }
             _isLoading.value = false
