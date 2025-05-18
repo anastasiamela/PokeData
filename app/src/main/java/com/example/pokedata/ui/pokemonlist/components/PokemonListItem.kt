@@ -1,6 +1,8 @@
 package com.example.pokedata.ui.pokemonlist.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,8 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,8 +22,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -44,21 +47,29 @@ fun PokemonListItem(
         .fromApiName(item.types.firstOrNull() ?: "")
         ?.color ?: MaterialTheme.colorScheme.surface
 
-    Card(
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .height(120.dp)
             .padding(horizontal = 16.dp, vertical = 8.dp)
+            .background(
+                brush = Brush.horizontalGradient(
+                    colors = listOf(
+                        dominantTypeColor.copy(alpha = 0.4f),
+                        dominantTypeColor
+                    )
+                ),
+                shape = RoundedCornerShape(16.dp)
+            )
             .clickable {
                 navController.navigate("pokemon_detail_screen/${item.name}")
-            },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = dominantTypeColor)
+            }
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .padding(12.dp)
+                .background(Color.Transparent),
             verticalAlignment = Alignment.CenterVertically
         ) {
             SubcomposeAsyncImage(
@@ -95,6 +106,7 @@ fun PokemonListItem(
                 Text(
                     text = item.name.replaceFirstChar { it.uppercase() },
                     style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
 
