@@ -48,7 +48,6 @@ class PokemonListViewModel @Inject constructor(
     private val _filteredByTypeList = mutableListOf<Pokemon>()
 
     private val _failedImageUrls = mutableStateListOf<String>()
-    val failedImageUrls: List<String> get() = _failedImageUrls
 
     val networkStatus: StateFlow<ConnectivityObserver.Status> =
         connectivityObserver.observe()
