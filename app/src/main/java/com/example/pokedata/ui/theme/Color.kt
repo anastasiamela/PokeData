@@ -24,3 +24,8 @@ val TypeDark = Color(0xFF705746)
 val TypeSteel = Color(0xFFB7B7CE)
 val TypeFairy = Color(0xFFD685AD)
 val TypeUnknown = Color(0xFF9E9E9E)
+
+val ClearLightColor = Color(0xFFFFA726)
+val ClearDarktColor = Color(0xFFFF7043)
+val ApplyLightColor = Color(0xFFa8e063)
+val ApplyDarkColor = Color(0xFF56ab2f)
