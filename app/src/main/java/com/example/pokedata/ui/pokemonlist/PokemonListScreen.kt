@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -25,8 +27,9 @@ fun PokemonListScreen(
     navController: NavController,
     viewModel: PokemonListViewModel = hiltViewModel()
 ) {
-//    val pokemonList by viewModel.pokemonList.collectAsState()
-    val pokemonList = viewModel.pokemonList.value
+    val pokemonList by viewModel.pokemonList.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val endReached by viewModel.endReached.collectAsState()
 
     Surface(
         color = MaterialTheme.colorScheme.background,
@@ -52,6 +55,9 @@ fun PokemonListScreen(
             }
             PokemonList(
                 pokemonList = pokemonList,
+                isLoading = isLoading,
+                endReached = endReached,
+                loadNextPage = { viewModel.loadNextPage() },
                 navController = navController,
                 modifier = Modifier.weight(1f)
             )

@@ -34,6 +34,7 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.example.pokedata.data.model.PokemonItem
 import com.example.pokedata.ui.pokemonlist.PokemonListViewModel
+import com.example.pokedata.ui.theme.TypeUnknown
 import com.example.pokedata.util.PokemonType
 
 @Composable
@@ -45,7 +46,7 @@ fun PokemonListItem(
 ) {
     val dominantTypeColor = PokemonType
         .fromApiName(item.types.firstOrNull() ?: "")
-        ?.color ?: MaterialTheme.colorScheme.surface
+        ?.color ?: TypeUnknown
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -87,13 +88,6 @@ fun PokemonListItem(
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.scale(0.5f)
                     )
-                },
-                onSuccess = {
-                    it.result.drawable.let { drawable ->
-                        viewModel.calcDominantColor(drawable) { color ->
-                            // optional update if needed
-                        }
-                    }
                 }
             )
 
