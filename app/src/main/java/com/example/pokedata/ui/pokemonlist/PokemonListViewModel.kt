@@ -5,8 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pokedata.data.model.PokemonItem
 import com.example.pokedata.data.network.ConnectivityObserver
+import com.example.pokedata.data.remote.responses.Pokemon
 import com.example.pokedata.repository.PokemonRepository
+import com.example.pokedata.util.Constants.FILTER_TYPE_ERROR_MESSAGE
+import com.example.pokedata.util.Constants.NO_POKEMONS_FOR_TYPE_MESSAGE
 import com.example.pokedata.util.Constants.PAGE_SIZE
+import com.example.pokedata.util.PokemonType
 import com.example.pokedata.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -38,18 +42,50 @@ class PokemonListViewModel @Inject constructor(
     private val _endReached = MutableStateFlow(false)
     val endReached: StateFlow<Boolean> = _endReached
 
-    val networkStatus: StateFlow<ConnectivityObserver.Status> =
-        connectivityObserver.observe()
-            .stateIn(viewModelScope, SharingStarted.Lazily, ConnectivityObserver.Status.Unavailable)
+    private val _selectedType = MutableStateFlow<PokemonType?>(null)
+    val selectedType: StateFlow<PokemonType?> = _selectedType
+
+    private val _filteredByTypeList = mutableListOf<Pokemon>()
 
     private val _failedImageUrls = mutableStateListOf<String>()
     val failedImageUrls: List<String> get() = _failedImageUrls
+
+    val networkStatus: StateFlow<ConnectivityObserver.Status> =
+        connectivityObserver.observe()
+            .stateIn(viewModelScope, SharingStarted.Lazily, ConnectivityObserver.Status.Unavailable)
 
     init {
         loadNextPage()
     }
 
+    fun selectType(type: PokemonType?) {
+        _selectedType.value = type
+        resetPagination()
+
+        if (type == null) {
+            loadNextPage()
+        } else {
+            loadAllFilteredPokemonsByType(type)
+        }
+    }
+
     fun loadNextPage() {
+        if (_selectedType.value != null) {
+            loadNextFilteredPage()
+        } else {
+            loadNextUnfilteredPage()
+        }
+    }
+
+    private fun resetPagination() {
+        currentPage = 0
+        _endReached.value = false
+        _errorMessage.value = ""
+        _pokemonList.value = emptyList()
+        _filteredByTypeList.clear()
+    }
+
+    fun loadNextUnfilteredPage() {
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = ""
@@ -77,7 +113,7 @@ class PokemonListViewModel @Inject constructor(
                                 }
                             }
                         }
-                    }.awaitAll().filterNotNull()
+                    }.awaitAll()
 
                     _pokemonList.value = _pokemonList.value + pokemonItems
                     currentPage++
@@ -87,6 +123,65 @@ class PokemonListViewModel @Inject constructor(
                     _errorMessage.value = result.message ?: "Unknown error"
                 }
             }
+            _isLoading.value = false
+        }
+    }
+
+    private fun loadAllFilteredPokemonsByType(type: PokemonType) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = ""
+
+            val result = repository.getPokemonListByType(type.typeName)
+
+            when (result) {
+                is Resource.Success -> {
+                    val pokemons = result.data ?: emptyList()
+                    if (pokemons.isEmpty()) {
+                        _errorMessage.value = NO_POKEMONS_FOR_TYPE_MESSAGE
+                        _isLoading.value = false
+                        return@launch
+                    }
+                    _filteredByTypeList.clear()
+                    _filteredByTypeList.addAll(pokemons)
+                    _isLoading.value = false
+                    loadNextFilteredPage()
+                }
+                is Resource.Error -> {
+                    _errorMessage.value = result.message ?: FILTER_TYPE_ERROR_MESSAGE
+                }
+            }
+            _isLoading.value = false
+        }
+    }
+
+    private fun loadNextFilteredPage() {
+        if (_isLoading.value || _endReached.value) return
+        viewModelScope.launch {
+            _isLoading.value = true
+            val start = currentPage * PAGE_SIZE
+            val end = minOf(start + PAGE_SIZE, _filteredByTypeList.size)
+
+            if (start >= _filteredByTypeList.size) {
+                _endReached.value = true
+                _isLoading.value = false
+                return@launch
+            }
+
+            val pokemonsOfThePage = _filteredByTypeList.subList(start, end)
+            val pokemonItems = pokemonsOfThePage.map { item ->
+                async {
+                    val info = repository.getPokemonInfo(item.pokemon.name)
+                    when (info) {
+                        is Resource.Success -> PokemonItem.fromPokemonInfoResponse(info.data!!)
+                        is Resource.Error -> PokemonItem.fallbackFromPokemonTypeListResponse(item.pokemon)
+                    }
+                }
+            }.awaitAll()
+
+            _pokemonList.value = _pokemonList.value + pokemonItems
+            currentPage++
+            _endReached.value = end >= _filteredByTypeList.size
             _isLoading.value = false
         }
     }

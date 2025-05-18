@@ -49,7 +49,6 @@ fun PokemonListScreen(
     val errorMessage by viewModel.errorMessage.collectAsState()
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val scope = rememberCoroutineScope()
     var showSheet by remember { mutableStateOf(false) }
     var selectedType by remember { mutableStateOf<PokemonType?>(null) }
 
@@ -66,9 +65,11 @@ fun PokemonListScreen(
                 },
                 onClearSelection = {
                     selectedType = null
+                    viewModel.selectType(null) // Reset in ViewModel
                     showSheet = false
                 },
                 onApply = {
+                    viewModel.selectType(selectedType) // Apply in ViewModel
                     showSheet = false
                 }
             )

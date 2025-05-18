@@ -1,6 +1,7 @@
 package com.example.pokedata.data.model
 
 import com.example.pokedata.data.remote.responses.PokemonResponse
+import com.example.pokedata.data.remote.responses.PokemonX
 import com.example.pokedata.data.remote.responses.Result
 import com.example.pokedata.util.Constants.DEFAULT_IMAGE_URL
 
@@ -21,6 +22,15 @@ data class PokemonItem(
         }
 
         fun fallbackFromPokemonListResponse(listItem: Result): PokemonItem {
+            return PokemonItem(
+                name = listItem.name,
+                number = extractNumberFromUrl(listItem.url),
+                imageUrl = DEFAULT_IMAGE_URL,
+                types = emptyList()
+            )
+        }
+
+        fun fallbackFromPokemonTypeListResponse(listItem: PokemonX): PokemonItem {
             return PokemonItem(
                 name = listItem.name,
                 number = extractNumberFromUrl(listItem.url),
