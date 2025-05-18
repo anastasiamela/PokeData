@@ -8,7 +8,8 @@ import com.example.pokedata.data.network.ConnectivityObserver
 import com.example.pokedata.data.remote.responses.Pokemon
 import com.example.pokedata.repository.PokemonRepository
 import com.example.pokedata.util.Constants.FILTER_TYPE_ERROR_MESSAGE
-import com.example.pokedata.util.Constants.NO_POKEMONS_FOR_TYPE_MESSAGE
+import com.example.pokedata.util.Constants.NO_POKEMON_FOR_NAME_MESSAGE
+import com.example.pokedata.util.Constants.NO_POKEMON_FOR_TYPE_MESSAGE
 import com.example.pokedata.util.Constants.PAGE_SIZE
 import com.example.pokedata.util.PokemonType
 import com.example.pokedata.util.Resource
@@ -49,12 +50,27 @@ class PokemonListViewModel @Inject constructor(
 
     private val _failedImageUrls = mutableStateListOf<String>()
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
+    private val _searchResult = MutableStateFlow<List<PokemonItem>>(emptyList())
+    val searchResult: StateFlow<List<PokemonItem>> = _searchResult
+
     val networkStatus: StateFlow<ConnectivityObserver.Status> =
         connectivityObserver.observe()
             .stateIn(viewModelScope, SharingStarted.Lazily, ConnectivityObserver.Status.Unavailable)
 
     init {
         loadNextPage()
+    }
+
+    fun onSearchSubmit(query: String) {
+        _searchQuery.value = query
+        if (_selectedType.value == null) {
+            searchPokemonByName(query)
+        } else {
+//            searchPokemonByQuery(query)
+        }
     }
 
     fun selectType(type: PokemonType?) {
@@ -137,7 +153,7 @@ class PokemonListViewModel @Inject constructor(
                 is Resource.Success -> {
                     val pokemons = result.data ?: emptyList()
                     if (pokemons.isEmpty()) {
-                        _errorMessage.value = NO_POKEMONS_FOR_TYPE_MESSAGE
+                        _errorMessage.value = NO_POKEMON_FOR_TYPE_MESSAGE
                         _isLoading.value = false
                         return@launch
                     }
@@ -146,6 +162,7 @@ class PokemonListViewModel @Inject constructor(
                     _isLoading.value = false
                     loadNextFilteredPage()
                 }
+
                 is Resource.Error -> {
                     _errorMessage.value = result.message ?: FILTER_TYPE_ERROR_MESSAGE
                 }
@@ -184,6 +201,34 @@ class PokemonListViewModel @Inject constructor(
             _isLoading.value = false
         }
     }
+
+    fun searchPokemonByName(name: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = ""
+
+            val result = repository.getPokemonInfo(name.lowercase())
+
+            when (result) {
+                is Resource.Success -> {
+                    val info = result.data
+                    val item = info?.let { PokemonItem.fromPokemonInfoResponse(it) }
+                    _searchResult.value = item?.let { listOf(it) } ?: emptyList()
+                    _pokemonList.value = _searchResult.value
+                    _endReached.value = true // Because we show only 1 item
+                }
+
+                is Resource.Error -> {
+                    _searchResult.value = emptyList()
+                    _pokemonList.value = emptyList()
+                    _errorMessage.value = NO_POKEMON_FOR_NAME_MESSAGE
+                }
+            }
+
+            _isLoading.value = false
+        }
+    }
+
 
     fun markImageFailed(url: String) {
         if (!_failedImageUrls.contains(url)) _failedImageUrls.add(url)

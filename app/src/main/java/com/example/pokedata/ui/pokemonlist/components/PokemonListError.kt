@@ -28,7 +28,8 @@ fun PokemonListError(
     modifier: Modifier = Modifier,
     errorMessage: String,
     showErrorImage: Boolean = false,
-    onRetry: () -> Unit
+    showRetryButton: Boolean = true,
+    onRetry: (() -> Unit)? = null
 ) {
     Column(
         modifier = modifier,
@@ -51,22 +52,24 @@ fun PokemonListError(
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(12.dp))
-        Button(
-            onClick = onRetry,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.surfaceVariant
-            ),
-            shape = RoundedCornerShape(12.dp),
-            elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp),
-            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
-        ) {
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Retry",
-                style = MaterialTheme.typography.labelLarge,
-                fontSize = 20.sp
-            )
+        if (showRetryButton && onRetry != null) {
+            Button(
+                onClick = onRetry,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.surfaceVariant
+                ),
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp),
+                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+            ) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Retry",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontSize = 20.sp
+                )
+            }
         }
     }
 }

@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
@@ -19,14 +21,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
     hint: String = "",
-    onSearch: (String) -> Unit
+    onSearch: (String) -> Unit,
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     var text by remember {
         mutableStateOf("")
     }
@@ -34,7 +40,7 @@ fun SearchBar(
         value = text,
         onValueChange = {
             text = it
-            onSearch(it)
+//            onSearch(it)
         },
         placeholder = {
             Text(
@@ -54,8 +60,11 @@ fun SearchBar(
             .fillMaxWidth()
             .heightIn(min = 10.dp)
             .padding(horizontal = 4.dp)
-            .shadow(4.dp, RoundedCornerShape(12.dp))
-        ,
+            .shadow(4.dp, RoundedCornerShape(12.dp)),
+        singleLine = true,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            imeAction = ImeAction.Search
+        ),
         shape = RoundedCornerShape(12.dp),
         colors = TextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -66,6 +75,12 @@ fun SearchBar(
             cursorColor = MaterialTheme.colorScheme.primary,
             focusedTextColor = MaterialTheme.colorScheme.onSurface,
             unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+        ),
+        keyboardActions = KeyboardActions(
+            onSearch = {
+                onSearch(text)
+                keyboardController?.hide()
+            }
         )
     )
 }

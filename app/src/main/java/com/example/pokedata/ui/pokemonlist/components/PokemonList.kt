@@ -44,49 +44,39 @@ fun PokemonList(
         }
     }
 
-    if (pokemonList.isEmpty() && errorMessage.isNotBlank()) {
-        PokemonListError(
-            errorMessage = errorMessage,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 64.dp, start = 24.dp, end = 24.dp),
-            showErrorImage = true,
-            onRetry = { onRetry() }
-        )
-    } else {
-        LazyColumn(
-            modifier = modifier.fillMaxSize(),
-            contentPadding = PaddingValues(2.dp)
-        ) {
-            itemsIndexed(pokemonList) { index, pokemon ->
-                if (index >= pokemonList.size - 1 && !isLoading && !endReached) {
-                    loadNextPage()
-                }
-                PokemonListItem(
-                    item = pokemon,
-                    navController = navController,
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(2.dp)
+    ) {
+        itemsIndexed(pokemonList) { index, pokemon ->
+            if (index >= pokemonList.size - 1 && !isLoading && !endReached) {
+                loadNextPage()
+            }
+            PokemonListItem(
+                item = pokemon,
+                navController = navController,
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+        }
+        if (isLoading) {
+            item {
+                PokemonListLoading()
+            }
+        }
+        if (errorMessage.isNotBlank()) {
+            item {
+                PokemonListError(
+                    errorMessage = errorMessage,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(16.dp),
+                    onRetry = { onRetry() }
                 )
-            }
-            if (isLoading) {
-                item {
-                    PokemonListLoading()
-                }
-            }
-            if (errorMessage.isNotBlank()) {
-                item {
-                    PokemonListError(
-                        errorMessage = errorMessage,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        onRetry = { onRetry() }
-                    )
-                }
             }
         }
     }
+
 }
 
 @Composable

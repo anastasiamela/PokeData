@@ -37,6 +37,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.pokedata.R
 import com.example.pokedata.ui.pokemonlist.components.PokemonList
+import com.example.pokedata.ui.pokemonlist.components.PokemonListError
 import com.example.pokedata.ui.pokemonlist.components.SearchBar
 import com.example.pokedata.ui.pokemonlist.components.TypeFilterMenu
 import com.example.pokedata.util.PokemonType
@@ -102,10 +103,11 @@ fun PokemonListScreen(
             ) {
                 SearchBar(
                     hint = "Search Pokémon...",
-                    modifier = Modifier.weight(1f)
-                ) {
-                    // viewModel.searchPokemonList(it)
-                }
+                    modifier = Modifier.weight(1f),
+                    onSearch = { query ->
+                        viewModel.onSearchSubmit(query)
+                    }
+                )
 
                 BadgedBox(
                     badge = {
@@ -137,20 +139,33 @@ fun PokemonListScreen(
                 }
             }
 
-            PokemonList(
-                pokemonList = pokemonList,
-                isLoading = isLoading,
-                errorMessage = errorMessage,
-                endReached = endReached,
-                loadNextPage = {
-                    viewModel.loadNextPage()
-                },
-                onRetry = {
-                    viewModel.loadNextPage()
-                },
-                navController = navController,
-                modifier = Modifier.weight(1f)
-            )
+            if (pokemonList.isEmpty() && errorMessage.isNotBlank()) {
+                PokemonListError(
+                    errorMessage = errorMessage,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 64.dp, start = 24.dp, end = 24.dp),
+                    showErrorImage = true,
+                    onRetry = {
+                        viewModel.loadNextPage()
+                    }
+                )
+            } else {
+                PokemonList(
+                    pokemonList = pokemonList,
+                    isLoading = isLoading,
+                    errorMessage = errorMessage,
+                    endReached = endReached,
+                    loadNextPage = {
+                        viewModel.loadNextPage()
+                    },
+                    onRetry = {
+                        viewModel.loadNextPage()
+                    },
+                    navController = navController,
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
     }
 }
