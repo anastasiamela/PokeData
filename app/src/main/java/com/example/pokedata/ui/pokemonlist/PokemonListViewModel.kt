@@ -27,7 +27,7 @@ import javax.inject.Inject
 class PokemonListViewModel @Inject constructor(
     private val repository: PokemonRepository,
     private val errorHandler: ErrorHandler,
-    private val connectivityObserver: ConnectivityObserver
+    private val connectivityObserver: ConnectivityObserver,
 ) : ViewModel() {
 
     private var currentPage = 0
