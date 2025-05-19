@@ -91,12 +91,6 @@ class PokemonListViewModel @Inject constructor(
         _searchResult.value = emptyList()
     }
 
-    private fun resetAll() {
-        resetPagination()
-        resetSearchQuery()
-        resetTypeSelection()
-    }
-
     fun loadPokemonListRetry() {
         if (_error.value?.shouldShowRetry == false) return
         _error.value = null
@@ -142,6 +136,9 @@ class PokemonListViewModel @Inject constructor(
                 val selectedType = _selectedType.value!!
                 if (_filteredByTypeList.isEmpty()) {
                     loadAllFilteredPokemonsByType(selectedType)
+                    if (_error.value != null || _filteredByTypeList.isEmpty()) {
+                        return@launch
+                    }
                 }
 
                 if (!_searchQuery.value.isBlank()) {
@@ -238,7 +235,6 @@ class PokemonListViewModel @Inject constructor(
         _isLoading.value = false
     }
 
-
     private fun loadNextTypeFilteredPage() {
         if (_isLoading.value || _endReached.value) return
         viewModelScope.launch {
@@ -253,17 +249,26 @@ class PokemonListViewModel @Inject constructor(
             }
 
             val pokemonsOfThePage = _filteredByTypeList.subList(start, end)
-            val pokemonItems = pokemonsOfThePage.map { item ->
+            val results = pokemonsOfThePage.map { item ->
                 async {
-                    val info = repository.getPokemonInfo(item.pokemon.name)
-                    when (info) {
-                        is Resource.Success -> PokemonItem.fromPokemonInfoResponse(info.data!!)
-                        is Resource.Error -> PokemonItem.fallback(item.pokemon)
-                    }
+                    repository.getPokemonInfo(item.pokemon.name)
                 }
             }.awaitAll()
 
-            _pokemonList.value = _pokemonList.value + pokemonItems
+            val successfulItems = results.mapNotNull { result ->
+                when (result) {
+                    is Resource.Success -> PokemonItem.fromPokemonInfoResponse(result.data!!)
+                    is Resource.Error -> null
+                }
+            }
+
+            if (successfulItems.isEmpty()) {
+                _error.value = errorHandler.handleError(results.get(0).throwable ?: Exception())
+                _isLoading.value = false
+                return@launch
+            }
+
+            _pokemonList.value = _pokemonList.value + successfulItems
             currentPage++
             _endReached.value = end >= _filteredByTypeList.size
             _isLoading.value = false
@@ -366,19 +371,27 @@ class PokemonListViewModel @Inject constructor(
                 return@launch
             }
 
-            val page = _searchResult.value.subList(start, end)
-
-            val detailedItems = page.map { item ->
+            val pokemonsOfThePage = _searchResult.value.subList(start, end)
+            val results = pokemonsOfThePage.map { item ->
                 async {
-                    val result = repository.getPokemonInfo(item.name)
-                    when (result) {
-                        is Resource.Success -> PokemonItem.fromPokemonInfoResponse(result.data!!)
-                        is Resource.Error -> item // Keep fallback if error
-                    }
+                    repository.getPokemonInfo(item.name)
                 }
             }.awaitAll()
 
-            _pokemonList.value += detailedItems
+            val successfulItems = results.mapNotNull { result ->
+                when (result) {
+                    is Resource.Success -> PokemonItem.fromPokemonInfoResponse(result.data!!)
+                    is Resource.Error -> null
+                }
+            }
+
+            if (successfulItems.isEmpty()) {
+                _error.value = errorHandler.handleError(results.get(0).throwable ?: Exception())
+                _isLoading.value = false
+                return@launch
+            }
+
+            _pokemonList.value += successfulItems
 
             currentPage++
             _endReached.value = end >= _searchResult.value.size
