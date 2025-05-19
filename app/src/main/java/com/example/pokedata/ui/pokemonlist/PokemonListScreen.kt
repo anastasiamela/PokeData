@@ -60,7 +60,10 @@ fun PokemonListScreen(
 
     if (showSheet) {
         ModalBottomSheet(
-            onDismissRequest = { showSheet = false },
+            onDismissRequest = {
+                showSheet = false
+                selectedType = null
+            },
             sheetState = sheetState
         ) {
             TypeFilterMenu(
