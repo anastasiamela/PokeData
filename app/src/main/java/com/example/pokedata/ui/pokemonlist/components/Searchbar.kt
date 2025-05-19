@@ -31,19 +31,16 @@ import androidx.compose.ui.unit.dp
 fun SearchBar(
     modifier: Modifier = Modifier,
     hint: String = "",
+    text: String,
+    onTextChange: (String) -> Unit,
     onSearch: (String) -> Unit,
     onClear: () -> Unit,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    var text by remember {
-        mutableStateOf("")
-    }
     TextField(
         value = text,
-        onValueChange = {
-            text = it
-        },
+        onValueChange = onTextChange,
         placeholder = {
             Text(
                 text = hint,
@@ -61,7 +58,7 @@ fun SearchBar(
         trailingIcon = {
             if (text.isNotEmpty()) {
                 IconButton(onClick = {
-                    text = ""
+                    onTextChange("")
                     keyboardController?.hide()
                     onClear()
 

@@ -54,10 +54,17 @@ fun PokemonListScreen(
     val endReached by viewModel.endReached.collectAsState()
     val error by viewModel.error.collectAsState()
     val appliedFilterType by viewModel.selectedType.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showSheet by remember { mutableStateOf(false) }
     var selectedType by remember { mutableStateOf<PokemonType?>(null) }
+    var textState by remember { mutableStateOf("") }
+
+    // Sync on first composition or when query changes from ViewModel
+    LaunchedEffect(searchQuery) {
+        textState = searchQuery
+    }
 
     if (showSheet) {
         // Sync selectedType with ViewModel when opening the sheet
@@ -113,6 +120,8 @@ fun PokemonListScreen(
                 SearchBar(
                     hint = "Search Pokémon...",
                     modifier = Modifier.weight(1f),
+                    text = textState,
+                    onTextChange = { textState = it },
                     onSearch = { query ->
                         viewModel.onSearchSubmit(query)
                     },
