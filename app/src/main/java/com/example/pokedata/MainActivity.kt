@@ -8,12 +8,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.pokedata.ui.pokemondetails.PokemonDetailsScreen
 import com.example.pokedata.ui.pokemonlist.PokemonListScreen
 import com.example.pokedata.ui.theme.PokeDataTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -31,14 +33,28 @@ class MainActivity : ComponentActivity() {
                         PokemonListScreen(navController = navController)
                     }
                     composable(
-                        "pokemonDetailsScreen/{pokemonName}",
+                        "pokemonDetailsScreen/{pokemonName}/{dominantTypeColor}",
                         arguments = listOf(
-                            navArgument("pokemonName") { type = NavType.StringType })
+                            navArgument("pokemonName") {
+                                type = NavType.StringType
+                            },
+                            navArgument("dominantTypeColor") {
+                                type = NavType.IntType
+                            }
+                        )
                     ) {
-                        val pokemonName = remember { it.arguments?.getString("pokemonName") }
-                        pokemonName?.let {
-//                            PokemonDetailsScreen(pokemonName = it)
+                        val pokemonName = remember {
+                            it.arguments?.getString("pokemonName")
                         }
+                        val dominantTypeColor = remember {
+                            val color = it.arguments?.getInt("dominantTypeColor")
+                            color?.let { Color(it) } ?: Color.White
+                        }
+                        PokemonDetailsScreen(
+                            dominantTypeColor = dominantTypeColor,
+                            pokemonName = pokemonName?.lowercase() ?: "",
+                            navController = navController
+                        )
                     }
                 }
             }

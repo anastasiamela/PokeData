@@ -16,6 +16,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -75,7 +76,7 @@ fun PokemonListItem(
             .background(Color.Transparent)
             .shadow(elevation = 4.dp, shape = RoundedCornerShape(12.dp))
             .clickable {
-                navController.navigate("pokemon_detail_screen/${item.name}")
+                navController.navigate("pokemonDetailsScreen/${item.name}/${dominantTypeColor.toArgb()}")
             },
         shape = RoundedCornerShape(12.dp),
     ) {
