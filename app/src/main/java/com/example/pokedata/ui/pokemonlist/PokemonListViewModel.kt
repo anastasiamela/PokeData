@@ -299,7 +299,7 @@ class PokemonListViewModel @Inject constructor(
                     val allPokemons = allResult.data?.results ?: emptyList()
 
                     val matchedNames = allPokemons.filter {
-                        it.name.contains(query.trim(), ignoreCase = true)
+                        it.name.startsWith(query.trim(), ignoreCase = true)
                     }
 
                     if (matchedNames.isEmpty()) {
