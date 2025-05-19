@@ -103,10 +103,10 @@ fun PokemonDetailsScreen(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            pokemon?.sprites?.let {
+            pokemon?.imageUrl?.let {
                 SubcomposeAsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(it.other.officialArtwork.frontDefault)
+                        .data(it)
                         .crossfade(true)
                         .build(),
                     contentDescription = pokemon!!.name,

@@ -6,13 +6,6 @@ import androidx.compose.ui.graphics.Color
 val LightBlue = Color(0xFFBAC7FF)
 val LightGrey = Color(0xFFAAAAAA)
 
-val HPColor = Color(0xFFF5FF00)
-val AtkColor = Color(1f, 0f, 0f, 0.66f)
-val DefColor = Color(0f, 0f, 1f, 0.44f)
-val SpAtkColor = Color(0.671f, 0f, 1f, 0.57f)
-val SpDefColor = Color(1f, 0f, 0.8f, 0.7f)
-val SpdColor = Color(0f, 1f, 0.063f, 0.55f)
-
 val TypeFire = Color(0xFFEE8130)
 val TypeWater = Color(0xFF6390F0)
 val TypeGrass = Color(0xFF7AC74C)
@@ -26,6 +19,6 @@ val TypeFairy = Color(0xFFD685AD)
 val TypeUnknown = Color(0xFF9E9E9E)
 
 val ClearLightColor = Color(0xFFFFA726)
-val ClearDarktColor = Color(0xFFFF7043)
+val ClearDarkColor = Color(0xFFFF7043)
 val ApplyLightColor = Color(0xFFa8e063)
 val ApplyDarkColor = Color(0xFF56ab2f)

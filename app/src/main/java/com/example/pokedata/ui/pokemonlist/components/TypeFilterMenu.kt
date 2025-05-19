@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pokedata.ui.theme.ApplyDarkColor
 import com.example.pokedata.ui.theme.ApplyLightColor
-import com.example.pokedata.ui.theme.ClearDarktColor
+import com.example.pokedata.ui.theme.ClearDarkColor
 import com.example.pokedata.ui.theme.ClearLightColor
 import com.example.pokedata.util.PokemonType
 
@@ -115,7 +115,7 @@ fun FilterButtons(
             gradient = Brush.horizontalGradient(
                 listOf(
                     ClearLightColor,
-                    ClearDarktColor
+                    ClearDarkColor
                 ) // orange
             ),
             onClick = onClearSelection

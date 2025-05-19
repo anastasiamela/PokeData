@@ -1,17 +1,19 @@
 package com.example.pokedata.ui.pokemondetails.components
 
+import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.example.pokedata.data.model.ErrorModel
-import com.example.pokedata.data.remote.responses.PokemonResponse
+import com.example.pokedata.data.model.PokemonDetailsItem
 
 @Composable
 fun PokemonDetailStateWrapper(
-    pokemon: PokemonResponse?,
+    pokemon: PokemonDetailsItem?,
     isLoading: Boolean,
     error: ErrorModel?,
     modifier: Modifier = Modifier,
@@ -34,10 +36,10 @@ fun PokemonDetailStateWrapper(
         }
 
         pokemon != null -> {
-            // TODO: Render actual Pokemon details here
-            Text(
-                text = "Pokemon Name: ${pokemon.name}",
+            PokemonDetailSection(
+                pokemon = pokemon,
                 modifier = modifier
+                    .offset(y = (-20).dp)
             )
         }
     }

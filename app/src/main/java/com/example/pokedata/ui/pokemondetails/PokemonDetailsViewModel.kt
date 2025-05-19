@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pokedata.common.error.ErrorHandler
 import com.example.pokedata.data.model.ErrorModel
-import com.example.pokedata.data.remote.responses.PokemonResponse
+import com.example.pokedata.data.model.PokemonDetailsItem
 import com.example.pokedata.repository.PokemonRepository
 import com.example.pokedata.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,8 +19,8 @@ class PokemonDetailsViewModel @Inject constructor(
     private val errorHandler: ErrorHandler,
 ) : ViewModel() {
 
-    private val _pokemon = MutableStateFlow<PokemonResponse?>(null)
-    val pokemon: StateFlow<PokemonResponse?> = _pokemon
+    private val _pokemon = MutableStateFlow<PokemonDetailsItem?>(null)
+    val pokemon: StateFlow<PokemonDetailsItem?> = _pokemon
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -36,7 +36,7 @@ class PokemonDetailsViewModel @Inject constructor(
             val result = repository.getPokemonInfo(pokemonName)
             when (result) {
                 is Resource.Success -> {
-                    _pokemon.value = result.data
+                    _pokemon.value = result.data?.let { PokemonDetailsItem.fromPokemonInfoResponse(it) }
                     _error.value = null
                 }
                 is Resource.Error -> {
