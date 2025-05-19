@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,9 +29,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
-import com.example.pokedata.ui.pokemondetails.components.PokemonDetailStateWrapper
+import com.example.pokedata.ui.pokemondetails.components.PokemonDetailSection
 import com.example.pokedata.ui.pokemondetails.components.PokemonDetailTopSection
-import com.example.pokedata.ui.pokemondetails.components.PokemonDetailsErrorSection
+import com.example.pokedata.ui.pokemondetails.components.PokemonDetailsErrorContent
 
 @Composable
 fun PokemonDetailsScreen(
@@ -49,83 +50,96 @@ fun PokemonDetailsScreen(
         viewModel.loadPokemonInfo(pokemonName.lowercase())
     }
 
-    if (error != null) {
-        PokemonDetailsErrorSection(
-            navController = navController,
-            error = error!!,
-            onRetry = {
-                viewModel.loadPokemonInfo(pokemonName.lowercase())
+    when {
+        isLoading -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(64.dp)
+                )
             }
-        )
-        return
-    }
+            return
+        }
 
-    Box(
-        modifier = Modifier
-            .statusBarsPadding()
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        dominantTypeColor,
-                        dominantTypeColor.copy(alpha = 0.3f)
-                    )
-                )
+        error != null -> {
+            PokemonDetailsErrorContent(
+                navController = navController,
+                error = error!!,
+                onRetry = {
+                    viewModel.loadPokemonInfo(pokemonName.lowercase())
+                }
             )
-            .padding(bottom = 16.dp)
-    ) {
-        PokemonDetailTopSection(
-            navController = navController,
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.2f)
-                .align(Alignment.TopCenter)
-                .background(dominantTypeColor)
-        )
-        PokemonDetailStateWrapper(
-            pokemon = pokemon,
-            isLoading = isLoading,
-            error = error,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    top = topPadding + pokemonImageSize / 2f,
-                    start = 16.dp,
-                    end = 16.dp,
-                    bottom = 16.dp
-                )
-                .shadow(10.dp, RoundedCornerShape(12.dp))
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(16.dp)
-                .align(Alignment.BottomCenter),
-            loadingModifier = Modifier
-                .size(100.dp)
-                .align(Alignment.Center)
-                .padding(
-                    top = topPadding + pokemonImageSize / 2f,
-                    start = 16.dp,
-                    end = 16.dp,
-                    bottom = 16.dp
-                )
-        )
-        Box(
-            contentAlignment = Alignment.TopCenter,
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            pokemon?.imageUrl?.let {
-                SubcomposeAsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(it)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = pokemon!!.name,
+            return
+        }
+
+        pokemon != null -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                dominantTypeColor,
+                                dominantTypeColor.copy(alpha = 0.3f)
+                            )
+                        )
+                    )
+                    .padding(bottom = 16.dp)
+                    .statusBarsPadding()
+            ) {
+                PokemonDetailTopSection(
+                    navController = navController,
                     modifier = Modifier
-                        .size(pokemonImageSize)
-                        .offset(y = topPadding),
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.2f)
+                        .align(Alignment.TopCenter)
+                        .background(dominantTypeColor)
                 )
+                pokemon?.let { safePokemon ->
+                    PokemonDetailSection(
+                        pokemon = safePokemon,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(
+                                top = topPadding + pokemonImageSize / 2f,
+                                start = 16.dp,
+                                end = 16.dp,
+                                bottom = 16.dp
+                            )
+                            .shadow(10.dp, RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(16.dp)
+                            .align(Alignment.BottomCenter)
+                            .offset(y = (-20).dp),
+                    )
+                }
+                Box(
+                    contentAlignment = Alignment.TopCenter,
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    pokemon?.imageUrl?.let {
+                        SubcomposeAsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(it)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = pokemon!!.name,
+                            modifier = Modifier
+                                .size(pokemonImageSize)
+                                .offset(y = topPadding),
+                        )
+                    }
+                }
             }
         }
     }
+
+
 }

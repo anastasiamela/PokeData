@@ -17,17 +17,18 @@ import com.example.pokedata.data.model.ErrorModel
 import com.example.pokedata.ui.components.PokemonListError
 
 @Composable
-fun PokemonDetailsErrorSection(
+fun PokemonDetailsErrorContent(
     navController: NavController,
     error: ErrorModel,
     onRetry: (() -> Unit)? = null
 ) {
     Box(
         modifier = Modifier
-            .statusBarsPadding()
+
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.background)
             .padding(bottom = 16.dp)
+            .statusBarsPadding()
     ) {
         PokemonDetailTopSection(
             navController = navController,
@@ -37,14 +38,18 @@ fun PokemonDetailsErrorSection(
                 .align(Alignment.TopCenter)
                 .background(color = MaterialTheme.colorScheme.background)
         )
-        PokemonListError(
+        // Centered error content
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp),
-            error = error,
-            showErrorImage = true,
-            onRetry = onRetry
-        )
-        return
+                .padding(horizontal = 32.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            PokemonListError(
+                error = error,
+                showErrorImage = true,
+                onRetry = onRetry
+            )
+        }
     }
 }
