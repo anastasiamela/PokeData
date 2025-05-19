@@ -22,6 +22,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,13 +53,18 @@ fun PokemonListScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val endReached by viewModel.endReached.collectAsState()
     val error by viewModel.error.collectAsState()
+    val appliedFilterType by viewModel.selectedType.collectAsState()
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showSheet by remember { mutableStateOf(false) }
     var selectedType by remember { mutableStateOf<PokemonType?>(null) }
-    val appliedFilterType by viewModel.selectedType.collectAsState()
 
     if (showSheet) {
+        // Sync selectedType with ViewModel when opening the sheet
+        LaunchedEffect(Unit) {
+            selectedType = appliedFilterType
+        }
+
         ModalBottomSheet(
             onDismissRequest = {
                 showSheet = false
