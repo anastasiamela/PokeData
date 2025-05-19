@@ -36,8 +36,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.pokedata.R
+import com.example.pokedata.ui.components.PokemonListError
 import com.example.pokedata.ui.pokemonlist.components.PokemonList
-import com.example.pokedata.ui.pokemonlist.components.PokemonListError
 import com.example.pokedata.ui.pokemonlist.components.SearchBar
 import com.example.pokedata.ui.pokemonlist.components.TypeFilterMenu
 import com.example.pokedata.util.PokemonType

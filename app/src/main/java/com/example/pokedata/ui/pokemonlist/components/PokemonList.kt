@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.pokedata.data.model.ErrorModel
 import com.example.pokedata.data.model.PokemonItem
+import com.example.pokedata.ui.components.PokemonListError
 
 @Composable
 fun PokemonList(

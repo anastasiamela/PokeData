@@ -1,4 +1,4 @@
-package com.example.pokedata.ui.pokemonlist.components
+package com.example.pokedata.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement

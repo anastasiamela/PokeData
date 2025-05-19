@@ -30,6 +30,7 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.example.pokedata.ui.pokemondetails.components.PokemonDetailStateWrapper
 import com.example.pokedata.ui.pokemondetails.components.PokemonDetailTopSection
+import com.example.pokedata.ui.pokemondetails.components.PokemonDetailsErrorSection
 
 @Composable
 fun PokemonDetailsScreen(
@@ -44,9 +45,19 @@ fun PokemonDetailsScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
-
     LaunchedEffect(pokemonName) {
         viewModel.loadPokemonInfo(pokemonName.lowercase())
+    }
+
+    if (error != null) {
+        PokemonDetailsErrorSection(
+            navController = navController,
+            error = error!!,
+            onRetry = {
+                viewModel.loadPokemonInfo(pokemonName.lowercase())
+            }
+        )
+        return
     }
 
     Box(
