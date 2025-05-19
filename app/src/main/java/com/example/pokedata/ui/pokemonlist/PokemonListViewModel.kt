@@ -1,6 +1,5 @@
 package com.example.pokedata.ui.pokemonlist
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -115,6 +114,7 @@ class PokemonListViewModel @Inject constructor(
     }
 
     fun onSearchCancel() {
+        if (_searchQuery.value.isBlank()) return
         resetSearchQuery()
         resetPagination()
         loadNextPage()
@@ -294,11 +294,6 @@ class PokemonListViewModel @Inject constructor(
 
             // Fallback: search locally from full list
             val allResult = repository.getPokemonList(limit = Int.MAX_VALUE, offset = 0)
-            Log.d(
-                "PokemonListViewModel",
-                "Fallback result count: ${allResult.data?.results?.size ?: 0}"
-            )
-
             when (allResult) {
                 is Resource.Success -> {
                     val allPokemons = allResult.data?.results ?: emptyList()

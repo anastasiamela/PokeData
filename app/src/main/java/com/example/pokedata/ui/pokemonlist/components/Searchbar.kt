@@ -7,8 +7,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -30,6 +32,7 @@ fun SearchBar(
     modifier: Modifier = Modifier,
     hint: String = "",
     onSearch: (String) -> Unit,
+    onClear: () -> Unit,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -40,7 +43,6 @@ fun SearchBar(
         value = text,
         onValueChange = {
             text = it
-//            onSearch(it)
         },
         placeholder = {
             Text(
@@ -55,6 +57,22 @@ fun SearchBar(
                 contentDescription = "Search icon",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        },
+        trailingIcon = {
+            if (text.isNotEmpty()) {
+                IconButton(onClick = {
+                    text = ""
+                    keyboardController?.hide()
+                    onClear()
+
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Clear text",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         },
         modifier = modifier
             .fillMaxWidth()

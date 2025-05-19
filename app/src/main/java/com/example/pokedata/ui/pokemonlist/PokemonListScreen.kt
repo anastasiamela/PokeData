@@ -106,6 +106,9 @@ fun PokemonListScreen(
                     modifier = Modifier.weight(1f),
                     onSearch = { query ->
                         viewModel.onSearchSubmit(query)
+                    },
+                    onClear = {
+                        viewModel.onSearchCancel()
                     }
                 )
 
