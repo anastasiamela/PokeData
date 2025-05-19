@@ -36,6 +36,10 @@ A simple and elegant Pokémon Explorer mobile application built with [Jetpack Co
 |------|-------------|------------------|-----------------------------------|
 | ![Home](screenshots/home.png) | ![Filter](screenshots/filter.png) | ![Detail](screenshots/detail.png) | ![Detail](screenshots/search.png) |
 
+| Not Found Error                    | Connection Error                            |
+|------------------------------------|---------------------------------------------|
+| ![Home](screenshots/error_404.png) | ![Search](screenshots/connection_error.png) |
+
 
 ## 📦 Installation
 
