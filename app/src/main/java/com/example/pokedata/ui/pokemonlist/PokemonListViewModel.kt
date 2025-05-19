@@ -89,6 +89,7 @@ class PokemonListViewModel @Inject constructor(
     private fun resetTypeSelection() {
         _selectedType.value = null
         _filteredByTypeList.clear()
+        _searchResult.value = emptyList()
     }
 
     private fun resetAll() {
@@ -122,7 +123,7 @@ class PokemonListViewModel @Inject constructor(
     fun searchPokemon(query: String) {
         resetPagination()
         if (_selectedType.value == null) {
-            searchPokemonByName(query)
+            searchPokemonWithNoTypeFilter(query)
         } else {
             searchInFilteredByTypePokemon(query)
         }
@@ -193,7 +194,7 @@ class PokemonListViewModel @Inject constructor(
                                 }
 
                                 is Resource.Error -> {
-                                    PokemonItem.fallbackFromPokemonListResponse(pokemonListItem)
+                                    PokemonItem.fallback(pokemonListItem)
                                 }
                             }
                         }
@@ -257,7 +258,7 @@ class PokemonListViewModel @Inject constructor(
                     val info = repository.getPokemonInfo(item.pokemon.name)
                     when (info) {
                         is Resource.Success -> PokemonItem.fromPokemonInfoResponse(info.data!!)
-                        is Resource.Error -> PokemonItem.fallbackFromPokemonTypeListResponse(item.pokemon)
+                        is Resource.Error -> PokemonItem.fallback(item.pokemon)
                     }
                 }
             }.awaitAll()
@@ -269,31 +270,70 @@ class PokemonListViewModel @Inject constructor(
         }
     }
 
-    fun searchPokemonByName(name: String) {
+    fun searchPokemonWithNoTypeFilter(query: String) {
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
 
-            val result = repository.getPokemonInfo(name.lowercase())
+            val directResult = repository.getPokemonInfo(query.lowercase())
 
-            when (result) {
+            when (directResult) {
                 is Resource.Success -> {
-                    val info = result.data
-                    val item = info?.let { PokemonItem.fromPokemonInfoResponse(it) }
+                    val item = directResult.data?.let { PokemonItem.fromPokemonInfoResponse(it) }
                     _searchResult.value = item?.let { listOf(it) } ?: emptyList()
                     _pokemonList.value = _searchResult.value
-                    _endReached.value = true // Because we show only 1 item
+                    _endReached.value = true
+                    _isLoading.value = false
+                    return@launch
+                }
+
+                is Resource.Error -> {
+                    // Proceed to fallback
+                }
+            }
+
+            // Fallback: search locally from full list
+            val allResult = repository.getPokemonList(limit = Int.MAX_VALUE, offset = 0)
+            Log.d(
+                "PokemonListViewModel",
+                "Fallback result count: ${allResult.data?.results?.size ?: 0}"
+            )
+
+            when (allResult) {
+                is Resource.Success -> {
+                    val allPokemons = allResult.data?.results ?: emptyList()
+
+                    val matchedNames = allPokemons.filter {
+                        it.name.contains(query.trim(), ignoreCase = true)
+                    }
+
+                    if (matchedNames.isEmpty()) {
+                        _searchResult.value = emptyList()
+                        _pokemonList.value = emptyList()
+                        _error.value = errorHandler.handleError(NotFoundException())
+                        _endReached.value = true
+                    } else {
+                        // Create placeholder items first
+                        _searchResult.value = matchedNames.map {
+                            PokemonItem.fallback(it)
+                        }
+                        _isLoading.value = false
+                        loadNextSearchPage()
+                    }
                 }
 
                 is Resource.Error -> {
                     _searchResult.value = emptyList()
                     _pokemonList.value = emptyList()
-                    _error.value = errorHandler.handleError(result.throwable ?: Exception())
+                    _error.value = errorHandler.handleError(allResult.throwable ?: Exception())
+                    _endReached.value = true
                 }
             }
+
             _isLoading.value = false
         }
     }
+
 
     private fun searchInFilteredByTypePokemon(query: String) {
         _searchResult.value = emptyList()
@@ -304,7 +344,7 @@ class PokemonListViewModel @Inject constructor(
         _searchResult.value = _filteredByTypeList.filter {
             it.pokemon.name.startsWith(query.trim(), ignoreCase = true)
         }.map {
-            PokemonItem.pokemonItemWithNameOnly(it.pokemon)
+            PokemonItem.fallback(it.pokemon)
         }
 
         if (_searchResult.value.isEmpty()) {

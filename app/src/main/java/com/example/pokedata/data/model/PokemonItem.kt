@@ -21,7 +21,7 @@ data class PokemonItem(
             )
         }
 
-        fun fallbackFromPokemonListResponse(listItem: Result): PokemonItem {
+        fun fallback(listItem: Result): PokemonItem {
             return PokemonItem(
                 name = listItem.name,
                 number = extractNumberFromUrl(listItem.url),
@@ -30,20 +30,11 @@ data class PokemonItem(
             )
         }
 
-        fun fallbackFromPokemonTypeListResponse(listItem: PokemonX): PokemonItem {
+        fun fallback(listItem: PokemonX): PokemonItem {
             return PokemonItem(
                 name = listItem.name,
                 number = extractNumberFromUrl(listItem.url),
                 imageUrl = DEFAULT_IMAGE_URL,
-                types = emptyList()
-            )
-        }
-
-        fun pokemonItemWithNameOnly(listItem: PokemonX): PokemonItem {
-            return PokemonItem(
-                name = listItem.name,
-                imageUrl = "",
-                number = 0,
                 types = emptyList()
             )
         }
