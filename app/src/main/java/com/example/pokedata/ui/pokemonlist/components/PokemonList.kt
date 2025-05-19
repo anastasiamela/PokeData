@@ -10,19 +10,13 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.pokedata.data.model.ErrorModel
 import com.example.pokedata.data.model.PokemonItem
-import com.example.pokedata.data.network.ConnectivityObserver
-import com.example.pokedata.ui.pokemonlist.PokemonListViewModel
 
 @Composable
 fun PokemonList(
@@ -34,18 +28,7 @@ fun PokemonList(
     onRetry: () -> Unit,
     navController: NavController,
     modifier: Modifier = Modifier,
-    viewModel: PokemonListViewModel = hiltViewModel()
 ) {
-    val networkStatus by viewModel.networkStatus.collectAsState()
-
-    // 👇 Retry data loading when back online and previous load failed
-    LaunchedEffect(networkStatus) {
-        println("LaunchedEffect triggered: network = $networkStatus, error = $error")
-        if (networkStatus == ConnectivityObserver.Status.Available && error?.shouldShowRetry == true) {
-            onRetry()
-        }
-    }
-
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(2.dp)

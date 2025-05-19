@@ -148,7 +148,7 @@ fun PokemonListScreen(
                             .padding(top = 64.dp, start = 24.dp, end = 24.dp),
                         showErrorImage = true,
                         onRetry = {
-                            viewModel.loadNextPage()
+                            viewModel.onRetry()
                         }
                     )
                 }
@@ -162,7 +162,7 @@ fun PokemonListScreen(
                         viewModel.loadNextPage()
                     },
                     onRetry = {
-                        viewModel.loadNextPage()
+                        viewModel.onRetry()
                     },
                     navController = navController,
                     modifier = Modifier.weight(1f)

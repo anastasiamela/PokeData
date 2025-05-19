@@ -63,11 +63,32 @@ class PokemonListViewModel @Inject constructor(
 
     init {
         loadNextPage()
+        // Retry data loading when back online and previous load failed
+        viewModelScope.launch {
+            connectivityObserver.observe().collect { status ->
+                if (status == ConnectivityObserver.Status.Available && _error.value?.shouldShowRetry == true) {
+                    onRetry()
+                }
+            }
+        }
+    }
+
+    fun onRetry() {
+        if (_error.value?.shouldShowRetry == false) return
+        _error.value = null
+        if (!_searchQuery.value.isBlank()) {
+            searchPokemon(_searchQuery.value)
+        }
+        loadNextPage()
     }
 
     fun onSearchSubmit(query: String) {
         if (query.isBlank()) return
         _searchQuery.value = query
+        searchPokemon(query)
+    }
+
+    fun searchPokemon(query: String) {
         if (_selectedType.value == null) {
             searchPokemonByName(query)
         } else {
@@ -87,6 +108,10 @@ class PokemonListViewModel @Inject constructor(
 
     fun loadNextPage() {
         if (_selectedType.value != null) {
+            if (_filteredByTypeList.isEmpty()) {
+                loadAllFilteredPokemonsByType(_selectedType.value!!)
+                return
+            }
             loadNextFilteredPage()
         } else {
             loadNextUnfilteredPage()
