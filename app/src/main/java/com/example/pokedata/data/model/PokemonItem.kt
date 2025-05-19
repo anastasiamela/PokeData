@@ -39,6 +39,15 @@ data class PokemonItem(
             )
         }
 
+        fun pokemonItemWithNameOnly(listItem: PokemonX): PokemonItem {
+            return PokemonItem(
+                name = listItem.name,
+                imageUrl = "",
+                number = 0,
+                types = emptyList()
+            )
+        }
+
         private fun extractNumberFromUrl(url: String): Int {
             return url.trimEnd('/')
                 .takeLastWhile { it.isDigit() }

@@ -1,5 +1,6 @@
 package com.example.pokedata.ui.pokemonlist
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -67,54 +68,9 @@ class PokemonListViewModel @Inject constructor(
         viewModelScope.launch {
             connectivityObserver.observe().collect { status ->
                 if (status == ConnectivityObserver.Status.Available && _error.value?.shouldShowRetry == true) {
-                    onRetry()
+                    loadPokemonListRetry()
                 }
             }
-        }
-    }
-
-    fun onRetry() {
-        if (_error.value?.shouldShowRetry == false) return
-        _error.value = null
-        if (!_searchQuery.value.isBlank()) {
-            searchPokemon(_searchQuery.value)
-        }
-        loadNextPage()
-    }
-
-    fun onSearchSubmit(query: String) {
-        if (query.isBlank()) return
-        _searchQuery.value = query
-        searchPokemon(query)
-    }
-
-    fun searchPokemon(query: String) {
-        if (_selectedType.value == null) {
-            searchPokemonByName(query)
-        } else {
-//            searchPokemonByQuery(query)
-        }
-    }
-
-    fun selectType(type: PokemonType?) {
-        _selectedType.value = type
-        resetPagination()
-        if (type == null) {
-            loadNextPage()
-        } else {
-            loadAllFilteredPokemonsByType(type)
-        }
-    }
-
-    fun loadNextPage() {
-        if (_selectedType.value != null) {
-            if (_filteredByTypeList.isEmpty()) {
-                loadAllFilteredPokemonsByType(_selectedType.value!!)
-                return
-            }
-            loadNextFilteredPage()
-        } else {
-            loadNextUnfilteredPage()
         }
     }
 
@@ -123,7 +79,94 @@ class PokemonListViewModel @Inject constructor(
         _endReached.value = false
         _error.value = null
         _pokemonList.value = emptyList()
+    }
+
+    private fun resetSearchQuery() {
+        _searchQuery.value = ""
+        _searchResult.value = emptyList()
+    }
+
+    private fun resetTypeSelection() {
+        _selectedType.value = null
         _filteredByTypeList.clear()
+    }
+
+    private fun resetAll() {
+        resetPagination()
+        resetSearchQuery()
+        resetTypeSelection()
+    }
+
+    fun loadPokemonListRetry() {
+        if (_error.value?.shouldShowRetry == false) return
+        _error.value = null
+        loadNextPage()
+    }
+
+    fun onSearchSubmit(query: String) {
+        if (query.isBlank()) {
+            onSearchCancel()
+            return
+        }
+        resetSearchQuery()
+        _searchQuery.value = query
+        searchPokemon(query)
+    }
+
+    fun onSearchCancel() {
+        resetSearchQuery()
+        resetPagination()
+        loadNextPage()
+    }
+
+    fun searchPokemon(query: String) {
+        resetPagination()
+        if (_selectedType.value == null) {
+            searchPokemonByName(query)
+        } else {
+            searchInFilteredByTypePokemon(query)
+        }
+    }
+
+    fun selectType(type: PokemonType?) {
+        resetTypeSelection()
+        _selectedType.value = type
+        resetPagination()
+        loadNextPage()
+    }
+
+    fun loadNextPage() {
+        viewModelScope.launch {
+            if (_selectedType.value != null) {
+                val selectedType = _selectedType.value!!
+                if (_filteredByTypeList.isEmpty()) {
+                    loadAllFilteredPokemonsByType(selectedType)
+                }
+
+                if (!_searchQuery.value.isBlank()) {
+                    findNextSearchPage()
+                    return@launch
+                }
+
+                loadNextTypeFilteredPage()
+            } else {
+                if (!_searchQuery.value.isBlank()) {
+                    findNextSearchPage()
+                    return@launch
+                }
+                loadNextUnfilteredPage()
+            }
+        }
+    }
+
+    fun findNextSearchPage() {
+        if (_searchResult.value.isEmpty()) {
+            // First time search → trigger the actual filtering and dummy mapping
+            searchPokemon(_searchQuery.value)
+        } else {
+            // Search already done → load next page
+            loadNextSearchPage()
+        }
     }
 
     fun loadNextUnfilteredPage() {
@@ -168,36 +211,34 @@ class PokemonListViewModel @Inject constructor(
         }
     }
 
-    private fun loadAllFilteredPokemonsByType(type: PokemonType) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            _error.value = null
+    suspend fun loadAllFilteredPokemonsByType(type: PokemonType) {
+        _isLoading.value = true
+        _error.value = null
 
-            val result = repository.getPokemonListByType(type.typeName)
+        val result = repository.getPokemonListByType(type.typeName)
 
-            when (result) {
-                is Resource.Success -> {
-                    val pokemons = result.data ?: emptyList()
-                    if (pokemons.isEmpty()) {
-                        _error.value = errorHandler.handleError(NotFoundException())
-                        _isLoading.value = false
-                        return@launch
-                    }
-                    _filteredByTypeList.clear()
-                    _filteredByTypeList.addAll(pokemons)
+        when (result) {
+            is Resource.Success -> {
+                val pokemons = result.data ?: emptyList()
+                if (pokemons.isEmpty()) {
+                    _error.value = errorHandler.handleError(NotFoundException())
                     _isLoading.value = false
-                    loadNextFilteredPage()
+                    return
                 }
-
-                is Resource.Error -> {
-                    _error.value = errorHandler.handleError(result.throwable ?: Exception())
-                }
+                _filteredByTypeList.clear()
+                _filteredByTypeList.addAll(pokemons)
             }
-            _isLoading.value = false
+
+            is Resource.Error -> {
+                _error.value = errorHandler.handleError(result.throwable ?: Exception())
+            }
         }
+
+        _isLoading.value = false
     }
 
-    private fun loadNextFilteredPage() {
+
+    private fun loadNextTypeFilteredPage() {
         if (_isLoading.value || _endReached.value) return
         viewModelScope.launch {
             _isLoading.value = true
@@ -250,6 +291,62 @@ class PokemonListViewModel @Inject constructor(
                     _error.value = errorHandler.handleError(result.throwable ?: Exception())
                 }
             }
+            _isLoading.value = false
+        }
+    }
+
+    private fun searchInFilteredByTypePokemon(query: String) {
+        _searchResult.value = emptyList()
+        _pokemonList.value = emptyList()
+        currentPage = 0
+        _endReached.value = false
+
+        _searchResult.value = _filteredByTypeList.filter {
+            it.pokemon.name.startsWith(query.trim(), ignoreCase = true)
+        }.map {
+            PokemonItem.pokemonItemWithNameOnly(it.pokemon)
+        }
+
+        if (_searchResult.value.isEmpty()) {
+            _error.value = errorHandler.handleError(NotFoundException())
+            _endReached.value = true
+            return
+        }
+
+        loadNextSearchPage()
+    }
+
+    private fun loadNextSearchPage() {
+        if (_isLoading.value || _endReached.value) return
+
+        viewModelScope.launch {
+            _isLoading.value = true
+
+            val start = currentPage * PAGE_SIZE
+            val end = minOf(start + PAGE_SIZE, _searchResult.value.size)
+
+            if (start >= _searchResult.value.size) {
+                _endReached.value = true
+                _isLoading.value = false
+                return@launch
+            }
+
+            val page = _searchResult.value.subList(start, end)
+
+            val detailedItems = page.map { item ->
+                async {
+                    val result = repository.getPokemonInfo(item.name)
+                    when (result) {
+                        is Resource.Success -> PokemonItem.fromPokemonInfoResponse(result.data!!)
+                        is Resource.Error -> item // Keep fallback if error
+                    }
+                }
+            }.awaitAll()
+
+            _pokemonList.value += detailedItems
+
+            currentPage++
+            _endReached.value = end >= _searchResult.value.size
             _isLoading.value = false
         }
     }
