@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.pokedata.R
-import com.example.pokedata.ui.components.PokemonListError
+import com.example.pokedata.ui.components.PokemonGenericError
 import com.example.pokedata.ui.pokemonlist.components.PokemonList
 import com.example.pokedata.ui.pokemonlist.components.SearchBar
 import com.example.pokedata.ui.pokemonlist.components.TypeFilterMenu
@@ -162,7 +162,7 @@ fun PokemonListScreen(
 
             if (pokemonList.isEmpty() && error?.title?.isNotBlank() == true) {
                 error?.let {
-                    PokemonListError(
+                    PokemonGenericError(
                         error = it,
                         modifier = Modifier
                             .fillMaxSize()

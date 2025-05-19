@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.pokedata.data.model.ErrorModel
-import com.example.pokedata.ui.components.PokemonListError
+import com.example.pokedata.ui.components.PokemonGenericError
 
 @Composable
 fun PokemonDetailsErrorContent(
@@ -45,7 +45,7 @@ fun PokemonDetailsErrorContent(
                 .padding(horizontal = 32.dp),
             contentAlignment = Alignment.Center
         ) {
-            PokemonListError(
+            PokemonGenericError(
                 error = error,
                 showErrorImage = true,
                 onRetry = onRetry

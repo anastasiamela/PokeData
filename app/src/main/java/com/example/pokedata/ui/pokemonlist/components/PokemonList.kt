@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.pokedata.data.model.ErrorModel
 import com.example.pokedata.data.model.PokemonItem
-import com.example.pokedata.ui.components.PokemonListError
+import com.example.pokedata.ui.components.PokemonGenericError
 
 @Composable
 fun PokemonList(
@@ -52,7 +52,7 @@ fun PokemonList(
         }
         if (error?.title?.isNotBlank() == true) {
             item {
-                PokemonListError(
+                PokemonGenericError(
                     error = error,
                     modifier = Modifier
                         .fillMaxWidth()
