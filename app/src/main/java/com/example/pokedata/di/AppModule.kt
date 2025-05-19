@@ -1,6 +1,8 @@
 package com.example.pokedata.di
 
 import android.content.Context
+import com.example.pokedata.common.error.DefaultErrorHandler
+import com.example.pokedata.common.error.ErrorHandler
 import com.example.pokedata.data.network.ConnectivityObserver
 import com.example.pokedata.data.network.NetworkConnectivityObserver
 import com.example.pokedata.data.remote.PokeApi
@@ -42,4 +44,8 @@ object AppModule {
     ): ConnectivityObserver {
         return NetworkConnectivityObserver(context)
     }
+
+    @Provides
+    @Singleton
+    fun provideErrorHandler(): ErrorHandler = DefaultErrorHandler()
 }

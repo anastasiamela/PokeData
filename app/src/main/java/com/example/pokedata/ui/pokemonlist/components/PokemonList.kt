@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.pokedata.data.model.ErrorModel
 import com.example.pokedata.data.model.PokemonItem
 import com.example.pokedata.data.network.ConnectivityObserver
 import com.example.pokedata.ui.pokemonlist.PokemonListViewModel
@@ -27,7 +28,7 @@ import com.example.pokedata.ui.pokemonlist.PokemonListViewModel
 fun PokemonList(
     pokemonList: List<PokemonItem>,
     isLoading: Boolean,
-    errorMessage: String,
+    error: ErrorModel?,
     endReached: Boolean,
     loadNextPage: () -> Unit,
     onRetry: () -> Unit,
@@ -39,7 +40,8 @@ fun PokemonList(
 
     // 👇 Retry data loading when back online and previous load failed
     LaunchedEffect(networkStatus) {
-        if (networkStatus == ConnectivityObserver.Status.Available && errorMessage.isNotBlank()) {
+        println("LaunchedEffect triggered: network = $networkStatus, error = $error")
+        if (networkStatus == ConnectivityObserver.Status.Available && error?.shouldShowRetry == true) {
             onRetry()
         }
     }
@@ -64,10 +66,10 @@ fun PokemonList(
                 PokemonListLoading()
             }
         }
-        if (errorMessage.isNotBlank()) {
+        if (error?.title?.isNotBlank() == true) {
             item {
                 PokemonListError(
-                    errorMessage = errorMessage,
+                    error = error,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),

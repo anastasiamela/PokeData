@@ -51,7 +51,7 @@ fun PokemonListScreen(
     val pokemonList by viewModel.pokemonList.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val endReached by viewModel.endReached.collectAsState()
-    val errorMessage by viewModel.errorMessage.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showSheet by remember { mutableStateOf(false) }
@@ -139,22 +139,24 @@ fun PokemonListScreen(
                 }
             }
 
-            if (pokemonList.isEmpty() && errorMessage.isNotBlank()) {
-                PokemonListError(
-                    errorMessage = errorMessage,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 64.dp, start = 24.dp, end = 24.dp),
-                    showErrorImage = true,
-                    onRetry = {
-                        viewModel.loadNextPage()
-                    }
-                )
+            if (pokemonList.isEmpty() && error?.title?.isNotBlank() == true) {
+                error?.let {
+                    PokemonListError(
+                        error = it,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 64.dp, start = 24.dp, end = 24.dp),
+                        showErrorImage = true,
+                        onRetry = {
+                            viewModel.loadNextPage()
+                        }
+                    )
+                }
             } else {
                 PokemonList(
                     pokemonList = pokemonList,
                     isLoading = isLoading,
-                    errorMessage = errorMessage,
+                    error = error,
                     endReached = endReached,
                     loadNextPage = {
                         viewModel.loadNextPage()

@@ -22,13 +22,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pokedata.R
+import com.example.pokedata.data.model.ErrorModel
 
 @Composable
 fun PokemonListError(
     modifier: Modifier = Modifier,
-    errorMessage: String,
+    error: ErrorModel,
     showErrorImage: Boolean = false,
-    showRetryButton: Boolean = true,
     onRetry: (() -> Unit)? = null
 ) {
     Column(
@@ -46,13 +46,13 @@ fun PokemonListError(
             )
         }
         Text(
-            text = errorMessage,
+            text = error.title,
             color = MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.titleLarge,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(12.dp))
-        if (showRetryButton && onRetry != null) {
+        if (error.shouldShowRetry && onRetry != null) {
             Button(
                 onClick = onRetry,
                 colors = ButtonDefaults.buttonColors(

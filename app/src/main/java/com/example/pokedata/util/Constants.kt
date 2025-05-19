@@ -5,9 +5,6 @@ object Constants {
     const val PAGE_SIZE = 10
     const val DEFAULT_IMAGE_URL = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png"
 
-    const val NO_POKEMON_FOR_TYPE_MESSAGE = "No Pokémon found for this type"
-    const val FILTER_TYPE_ERROR_MESSAGE = "Could not load filtered Pokémon"
-
-    const val NO_POKEMON_FOR_NAME_MESSAGE = "Oops! No results found for this Pokémon name"
+    const val DEFAULT_ERROR_MESSAGE = "Something went wrong"
 
 }

@@ -3,13 +3,13 @@ package com.example.pokedata.ui.pokemonlist
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.pokedata.common.error.ErrorHandler
+import com.example.pokedata.common.exception.NotFoundException
+import com.example.pokedata.data.model.ErrorModel
 import com.example.pokedata.data.model.PokemonItem
 import com.example.pokedata.data.network.ConnectivityObserver
 import com.example.pokedata.data.remote.responses.Pokemon
 import com.example.pokedata.repository.PokemonRepository
-import com.example.pokedata.util.Constants.FILTER_TYPE_ERROR_MESSAGE
-import com.example.pokedata.util.Constants.NO_POKEMON_FOR_NAME_MESSAGE
-import com.example.pokedata.util.Constants.NO_POKEMON_FOR_TYPE_MESSAGE
 import com.example.pokedata.util.Constants.PAGE_SIZE
 import com.example.pokedata.util.PokemonType
 import com.example.pokedata.util.Resource
@@ -26,6 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class PokemonListViewModel @Inject constructor(
     private val repository: PokemonRepository,
+    private val errorHandler: ErrorHandler,
     private val connectivityObserver: ConnectivityObserver
 ) : ViewModel() {
 
@@ -34,8 +35,8 @@ class PokemonListViewModel @Inject constructor(
     private val _pokemonList = MutableStateFlow<List<PokemonItem>>(emptyList())
     val pokemonList: StateFlow<List<PokemonItem>> = _pokemonList
 
-    private val _errorMessage = MutableStateFlow("")
-    val errorMessage: StateFlow<String> = _errorMessage
+    private val _error = MutableStateFlow<ErrorModel?>(null)
+    val error: StateFlow<ErrorModel?> = _error
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -65,6 +66,7 @@ class PokemonListViewModel @Inject constructor(
     }
 
     fun onSearchSubmit(query: String) {
+        if (query.isBlank()) return
         _searchQuery.value = query
         if (_selectedType.value == null) {
             searchPokemonByName(query)
@@ -76,7 +78,6 @@ class PokemonListViewModel @Inject constructor(
     fun selectType(type: PokemonType?) {
         _selectedType.value = type
         resetPagination()
-
         if (type == null) {
             loadNextPage()
         } else {
@@ -95,7 +96,7 @@ class PokemonListViewModel @Inject constructor(
     private fun resetPagination() {
         currentPage = 0
         _endReached.value = false
-        _errorMessage.value = ""
+        _error.value = null
         _pokemonList.value = emptyList()
         _filteredByTypeList.clear()
     }
@@ -103,7 +104,7 @@ class PokemonListViewModel @Inject constructor(
     fun loadNextUnfilteredPage() {
         viewModelScope.launch {
             _isLoading.value = true
-            _errorMessage.value = ""
+            _error.value = null
 
             val offset = currentPage * PAGE_SIZE
             val result = repository.getPokemonList(limit = PAGE_SIZE, offset = offset)
@@ -135,7 +136,7 @@ class PokemonListViewModel @Inject constructor(
                 }
 
                 is Resource.Error -> {
-                    _errorMessage.value = result.message ?: "Unknown error"
+                    _error.value = errorHandler.handleError(result.throwable ?: Exception())
                 }
             }
             _isLoading.value = false
@@ -145,7 +146,7 @@ class PokemonListViewModel @Inject constructor(
     private fun loadAllFilteredPokemonsByType(type: PokemonType) {
         viewModelScope.launch {
             _isLoading.value = true
-            _errorMessage.value = ""
+            _error.value = null
 
             val result = repository.getPokemonListByType(type.typeName)
 
@@ -153,7 +154,7 @@ class PokemonListViewModel @Inject constructor(
                 is Resource.Success -> {
                     val pokemons = result.data ?: emptyList()
                     if (pokemons.isEmpty()) {
-                        _errorMessage.value = NO_POKEMON_FOR_TYPE_MESSAGE
+                        _error.value = errorHandler.handleError(NotFoundException())
                         _isLoading.value = false
                         return@launch
                     }
@@ -164,7 +165,7 @@ class PokemonListViewModel @Inject constructor(
                 }
 
                 is Resource.Error -> {
-                    _errorMessage.value = result.message ?: FILTER_TYPE_ERROR_MESSAGE
+                    _error.value = errorHandler.handleError(result.throwable ?: Exception())
                 }
             }
             _isLoading.value = false
@@ -205,7 +206,7 @@ class PokemonListViewModel @Inject constructor(
     fun searchPokemonByName(name: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            _errorMessage.value = ""
+            _error.value = null
 
             val result = repository.getPokemonInfo(name.lowercase())
 
@@ -221,10 +222,9 @@ class PokemonListViewModel @Inject constructor(
                 is Resource.Error -> {
                     _searchResult.value = emptyList()
                     _pokemonList.value = emptyList()
-                    _errorMessage.value = NO_POKEMON_FOR_NAME_MESSAGE
+                    _error.value = errorHandler.handleError(result.throwable ?: Exception())
                 }
             }
-
             _isLoading.value = false
         }
     }
