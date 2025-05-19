@@ -22,3 +22,6 @@ val ClearLightColor = Color(0xFFFFA726)
 val ClearDarkColor = Color(0xFFFF7043)
 val ApplyLightColor = Color(0xFFa8e063)
 val ApplyDarkColor = Color(0xFF56ab2f)
+
+val StatRedColor = Color(0xFFFF5252)
+val StatPeachColor = Color(0xFFFFBC9A)
